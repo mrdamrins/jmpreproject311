@@ -1,25 +1,30 @@
 package com.example.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import org.springframework.security.core.GrantedAuthority;
 
 @Entity
+@Table(name = "roles")
 public class Role implements GrantedAuthority {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
+  @Column(name = "id")
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  private String roleName;
+  @Column(name = "name")
+  private String role;
 
   public Role() {
   }
 
-  public Role(String roleName) {
-    this.roleName = roleName;
+  public Role(String role) {
+    this.role = role;
   }
 
   public Long getId() {
@@ -30,24 +35,16 @@ public class Role implements GrantedAuthority {
     this.id = id;
   }
 
-  public String getRoleName() {
-    return roleName;
+  public String getRole() {
+    return role;
   }
 
-  public void setRoleName(String roleName) {
-    this.roleName = roleName;
-  }
-
-  @Override
-  public String toString() {
-    return "Role{" +
-        "id=" + id +
-        ", roleName='" + roleName + '\'' +
-        '}';
+  public void setRole(String role) {
+    this.role = role;
   }
 
   @Override
   public String getAuthority() {
-    return ("ROLE_" + roleName);
+    return role;
   }
 }

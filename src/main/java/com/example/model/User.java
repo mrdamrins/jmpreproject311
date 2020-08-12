@@ -6,178 +6,145 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.Table;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
+@Table(name = "users")
 public class User implements UserDetails {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+  @Id
+  @Column(name = "id")
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private long id;
 
-    @NotBlank(message = "First Name is mandatory")
-    private String firstName;
+  @Column(name = "email")
+  private String email;
 
-    @NotBlank(message = "Last Name  is mandatory")
-    private String lastName;
+  @Column(name = "login")
+  private String login;
 
-    @NotNull(message = "Age is mandatory")
-    private Byte age;
+  @Column(name = "password")
+  private String password;
 
-    @NotBlank(message = "Email is mandatory")
-    private String email;
+  @ManyToMany (fetch = FetchType.LAZY)
+  @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"),
+      inverseJoinColumns = @JoinColumn(name = "role_id"))
+  private Set<Role> roles;
 
-    @NotBlank(message = "Password is mandatory")
-    private String password;
+  public User(String login, String email, String password, Set<Role> roles) {
+    this.login = login;
+    this.email = email;
+    this.password = password;
+    this.roles = roles;
+  }
 
-    @ManyToMany
-    @JoinTable(name = "user_role",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles = new HashSet<>();
+  public User() {
+  }
 
-    public User() {
-    }
+  public String getLogin() {
+    return login;
+  }
 
-    public User(String firstName, String lastName, Byte age, String email, String password) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.age = age;
-        this.email = email;
-        this.password = password;
-    }
+  public void setLogin(String login) {
+    this.login = login;
+  }
 
+  public User(String login, String email, String password) {
+    this.login = login;
+    this.email = email;
+    this.password = password;
+  }
 
-    public Long getId() {
-        return id;
-    }
+  public User(String login, String password) {
+    this.login = login;
+    this.password = password;
+  }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+  public long getId() {
+    return id;
+  }
 
-    public String getFirstName() {
-        return firstName;
-    }
+  public void setId(long id) {
+    this.id = id;
+  }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
+  public String getEmail() {
+    return email;
+  }
 
-    public String getLastName() {
-        return lastName;
-    }
+  public void setEmail(String email) {
+    this.email = email;
+  }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
+  public String getPassword() {
+    return password;
+  }
 
-    public Byte getAge() {
-        return age;
-    }
+  public void setPassword(String password) {
+    this.password = password;
+  }
 
-    public void setAge(Byte age) {
-        this.age = age;
-    }
+  public Set<Role> getRoles() {
+    return roles;
+  }
 
-    public String getEmail() {
-        return email;
-    }
+  public void setRoles(Set<Role> roles) {
+    this.roles = roles;
+  }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    User user = (User) o;
+    return Objects.equals(email, user.email);
+  }
 
-    @Override
-    public String getPassword() {
-        return password;
-    }
+  @Override
+  public int hashCode() {
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    return Objects.hash(email);
+  }
 
-    public Set<Role> getRoles() {
-        return roles;
-    }
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    return getRoles();
+  }
 
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
-    }
+  @Override
+  public String getUsername() {
+    return login;
+  }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        for (Role role : roles) {
-            GrantedAuthority authority = new SimpleGrantedAuthority(role.getAuthority());
-            authorities.add(authority);
-        }
-        return authorities;
-    }
+  @Override
+  public boolean isAccountNonExpired() {
+    return true;
+  }
 
-    @Override
-    public String getUsername() {
-        return email;
-    }
+  @Override
+  public boolean isAccountNonLocked() {
+    return true;
+  }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
+  @Override
+  public boolean isCredentialsNonExpired() {
+    return true;
+  }
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        User user = (User) o;
-        return Objects.equals(id, user.id) &&
-            Objects.equals(firstName, user.firstName) &&
-            Objects.equals(lastName, user.lastName) &&
-            Objects.equals(age, user.age) &&
-            Objects.equals(email, user.email) &&
-            Objects.equals(password, user.password) &&
-            Objects.equals(roles, user.roles);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, firstName, lastName, age, email, password, roles);
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-            "id=" + id +
-            ", firstName='" + firstName + '\'' +
-            ", lastName='" + lastName + '\'' +
-            ", age=" + age +
-            ", email='" + email + '\'' +
-            ", password='" + password + '\'' +
-            ", roles=" + roles +
-            '}';
-    }
+  @Override
+  public boolean isEnabled() {
+    return true;
+  }
 }
